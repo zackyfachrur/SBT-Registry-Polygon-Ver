@@ -12,7 +12,7 @@
     "@influxdata/influxdb-client": "^1.35.0",
     "@nomicfoundation/hardhat-toolbox": "^6.1.0",
     "dotenv": "^17.2.3",
-    "ethers": "^6.2.4",
+    "ethers": "^6.16.0",
     "hardhat": "^2.27.0"
   },
   "dependencies": {
