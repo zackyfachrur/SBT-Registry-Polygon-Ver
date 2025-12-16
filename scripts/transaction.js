@@ -3,12 +3,13 @@ const { ethers } = hre;
 const fs = require("fs");
 
 async function main() {
-    const [deployer, validator, holder] = await ethers.getSigners();
+    const [deployer, validator, holder, verifier] = await ethers.getSigners();
 
     console.log("\n========== START BULK RUN ==========\n");
     console.log("Deployer :", deployer.address);
     console.log("Validator:", validator.address);
     console.log("Holder   :", holder.address);
+    console.log("Verifier :", verifier.address);
 
     // 1) DEPLOY REGISTRY
     const Registry = await ethers.getContractFactory("contracts/CredentialRegistry.sol:CredentialRegistry");

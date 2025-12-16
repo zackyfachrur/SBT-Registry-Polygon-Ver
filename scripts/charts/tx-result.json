@@ -1,0 +1,219 @@
+[
+  {
+    "step": "attest",
+    "tokenId": 1,
+    "gasUsed": "143010",
+    "blockNumber": 3,
+    "confirmTimeSec": 2.03,
+    "latencyBlocks": 1,
+    "network": "hardhat",
+    "chainId": 31337,
+    "timestamp": "2025-12-14T18:29:45.825Z"
+  },
+  {
+    "step": "mint",
+    "tokenId": 1,
+    "gasUsed": "119023",
+    "blockNumber": 4,
+    "confirmTimeSec": 2.04,
+    "latencyBlocks": 1,
+    "network": "hardhat",
+    "chainId": 31337,
+    "timestamp": "2025-12-14T18:29:47.871Z"
+  },
+  {
+    "step": "verify",
+    "tokenId": 1,
+    "verified": true,
+    "latencyBlocks": 0,
+    "network": "hardhat",
+    "chainId": 31337,
+    "timestamp": "2025-12-14T18:29:47.886Z"
+  },
+  {
+    "step": "attest",
+    "tokenId": 1,
+    "gasUsed": "143010",
+    "blockNumber": 30522984,
+    "confirmTimeSec": 6.06,
+    "latencyBlocks": 4,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-14T18:30:30.221Z"
+  },
+  {
+    "step": "mint",
+    "tokenId": 1,
+    "gasUsed": "119035",
+    "blockNumber": 30522988,
+    "confirmTimeSec": 5.21,
+    "latencyBlocks": 3,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-14T18:30:35.777Z"
+  },
+  {
+    "step": "verify",
+    "tokenId": 1,
+    "verified": true,
+    "latencyBlocks": 1,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-14T18:30:37.874Z"
+  },
+  {
+    "step": "attest",
+    "tokenId": 1,
+    "gasUsed": "143010",
+    "blockNumber": 30523022,
+    "confirmTimeSec": 6.08,
+    "latencyBlocks": 4,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-14T18:31:27.270Z"
+  },
+  {
+    "step": "mint",
+    "tokenId": 1,
+    "gasUsed": "119035",
+    "blockNumber": 30523026,
+    "confirmTimeSec": 5.5,
+    "latencyBlocks": 3,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-14T18:31:33.134Z"
+  },
+  {
+    "step": "verify",
+    "tokenId": 1,
+    "verified": true,
+    "latencyBlocks": 0,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-14T18:31:34.170Z"
+  },
+  {
+    "step": "attest",
+    "tokenId": 1,
+    "gasUsed": "143010",
+    "blockNumber": 30523187,
+    "confirmTimeSec": 5.44,
+    "latencyBlocks": 4,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-14T18:35:34.247Z"
+  },
+  {
+    "step": "mint",
+    "tokenId": 1,
+    "gasUsed": "119035",
+    "blockNumber": 30523191,
+    "confirmTimeSec": 6.24,
+    "latencyBlocks": 4,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-14T18:35:40.838Z"
+  },
+  {
+    "step": "verify",
+    "tokenId": 1,
+    "verified": true,
+    "latencyBlocks": 0,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-14T18:35:42.038Z"
+  },
+  {
+    "step": "attest",
+    "tokenId": 1,
+    "gasUsed": "143010",
+    "blockNumber": 3,
+    "confirmTimeSec": 3.28,
+    "latencyBlocks": 1,
+    "network": "hardhat",
+    "chainId": 31337,
+    "timestamp": "2025-12-15T18:11:08.930Z"
+  },
+  {
+    "step": "mint",
+    "tokenId": 1,
+    "gasUsed": "119023",
+    "blockNumber": 4,
+    "confirmTimeSec": 2.7,
+    "latencyBlocks": 1,
+    "network": "hardhat",
+    "chainId": 31337,
+    "timestamp": "2025-12-15T18:11:11.685Z"
+  },
+  {
+    "step": "verify",
+    "tokenId": 1,
+    "verified": true,
+    "latencyBlocks": 0,
+    "network": "hardhat",
+    "chainId": 31337,
+    "timestamp": "2025-12-15T18:11:12.271Z"
+  },
+  {
+    "step": "attest",
+    "tokenId": 1,
+    "gasUsed": "143010",
+    "blockNumber": 30579990,
+    "confirmTimeSec": 5.83,
+    "latencyBlocks": 3,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-15T18:15:40.782Z"
+  },
+  {
+    "step": "mint",
+    "tokenId": 1,
+    "gasUsed": "119035",
+    "blockNumber": 30579994,
+    "confirmTimeSec": 5.4,
+    "latencyBlocks": 3,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-15T18:15:46.546Z"
+  },
+  {
+    "step": "verify",
+    "tokenId": 1,
+    "verified": true,
+    "latencyBlocks": 0,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-15T18:15:47.833Z"
+  },
+  {
+    "step": "attest",
+    "tokenId": 1,
+    "gasUsed": "143010",
+    "blockNumber": 30622051,
+    "confirmTimeSec": 5.83,
+    "latencyBlocks": 4,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-16T11:47:10.959Z"
+  },
+  {
+    "step": "mint",
+    "tokenId": 1,
+    "gasUsed": "119035",
+    "blockNumber": 30622056,
+    "confirmTimeSec": 6.96,
+    "latencyBlocks": 5,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-16T11:47:18.828Z"
+  },
+  {
+    "step": "verify",
+    "tokenId": 1,
+    "verified": true,
+    "latencyBlocks": 1,
+    "network": "amoy",
+    "chainId": 80002,
+    "timestamp": "2025-12-16T11:47:20.480Z"
+  }
+]
