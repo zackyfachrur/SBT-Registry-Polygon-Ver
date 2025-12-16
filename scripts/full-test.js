@@ -1,208 +1,156 @@
-const hre = require("hardhat");
-const { ethers } = hre;
-const fs = require("fs");
+    const hre = require("hardhat");
+    const { ethers } = hre;
 
-// ================= CONFIG =================
-const RESULT_FILE = "scripts/charts/tx-result.json";
+    async function main() {
+    const [deployer, validator, holder, verifier] = await ethers.getSigners();
 
-// ================= UTIL ===================
-function appendTx(entry) {
-  let data = [];
-  if (fs.existsSync(RESULT_FILE)) {
-    data = JSON.parse(fs.readFileSync(RESULT_FILE, "utf8"));
-  }
-  data.push(entry);
-  fs.writeFileSync(RESULT_FILE, JSON.stringify(data, null, 2));
-}
+    console.log("\n========== START FULL RUN ==========\n");
+    console.log("Deployer :", deployer.address);
+    console.log("Validator:", validator.address);
+    console.log("Holder   :", holder.address);
+    console.log("Verifier :", verifier.address);
 
-// ================= MAIN ===================
-async function main() {
-  const [deployer, validator, holder, verifier] = await ethers.getSigners();
+    // 1) DEPLOY REGISTRY
+    const Registry = await ethers.getContractFactory("contracts/CredentialRegistry.sol:CredentialRegistry");
+    const regTx = await Registry.connect(deployer).deploy(validator.address);   
+    await regTx.waitForDeployment();
 
-  console.log("\n========== START FULL RUN ==========\n");
-  console.log("Network  :", hre.network.name);
-  console.log("Chain ID :", hre.network.config.chainId);
-  console.log("Deployer :", deployer.address);
-  console.log("Validator:", validator.address);
-  console.log("Holder   :", holder.address);
-  console.log("Verifier :", verifier.address);
+    const registry = regTx;
+    const registryAddr = await registry.getAddress();
 
-  // ================= 1. DEPLOY REGISTRY =================
-  const Registry = await ethers.getContractFactory(
-    "contracts/CredentialRegistry.sol:CredentialRegistry"
-  );
+    console.log("\nRegistry deployed:", registryAddr);
 
-  const registryDeployTx = await Registry
-    .connect(deployer)
-    .deploy(validator.address);
+    // 2) DEPLOY SBT
+    const SBT = await ethers.getContractFactory("CredentialSBT");
+    const sbtTx = await SBT.connect(deployer).deploy(
+        registryAddr,
+        "MySBT",
+        "MSBT"
+    );
+    await sbtTx.waitForDeployment();
 
-  await registryDeployTx.waitForDeployment();
-  const registry = registryDeployTx;
-  const registryAddr = await registry.getAddress();
+    const sbt = sbtTx;
+    const sbtAddr = await sbt.getAddress();
 
-  console.log("\nRegistry deployed:", registryAddr);
+    console.log("SBT deployed      :", sbtAddr);
 
-  // ================= 2. DEPLOY SBT =================
-  const SBT = await ethers.getContractFactory("CredentialSBT");
+    // 3) ATTEST (Anchor Credential)
+    const metadata = {
+        issuerID: "TEL-U-ECON",
+        subjectID: "NIM-999888777",
+        credType: "BachelorOfIT",
+        issueDate: 1719792000,
+    };
 
-  const sbtDeployTx = await SBT
-    .connect(deployer)
-    .deploy(registryAddr, "MySBT", "MSBT");
-
-  await sbtDeployTx.waitForDeployment();
-  const sbt = sbtDeployTx;
-  const sbtAddr = await sbt.getAddress();
-
-  console.log("SBT deployed      :", sbtAddr);
-
-  // ================= 3. METADATA =================
-  const metadata = {
-    issuerID: "TEL-U-ECON",
-    subjectID: "NIM-999888777",
-    credType: "BachelorOfIT",
-    issueDate: 1719792000,
-  };
-
-  const metaHash = ethers.solidityPackedKeccak256(
-    ["string", "string", "string", "uint256"],
-    [
-      metadata.issuerID,
-      metadata.subjectID,
-      metadata.credType,
-      metadata.issueDate,
-    ]
-  );
-
-  const expiry = 2000000000;
-
-  // ================= 4. ATTEST =================
-  const attestStartTime = Date.now();
-  const attestStartBlock = await ethers.provider.getBlock("latest");
-
-  const attestTx = await registry
-    .connect(validator)
-    .attest(
-      metadata.issuerID,
-      metadata.subjectID,
-      metadata.credType,
-      metadata.issueDate,
-      expiry
+    const metaHash = ethers.solidityPackedKeccak256(
+        ["string", "string", "string", "uint256"],
+        [
+        metadata.issuerID,
+        metadata.subjectID,
+        metadata.credType,
+        metadata.issueDate,
+        ]
     );
 
-  const attestReceipt = await attestTx.wait();
-  const attestEndTime = Date.now();
-  const attestEndBlock = await ethers.provider.getBlock("latest");
+    const expiry = 2000000000;
 
-  const tokenId = Number(attestReceipt.logs[0].args.tokenId);
+    const attestTx = await registry
+        .connect(validator)
+        .attest(metadata.issuerID, metadata.subjectID, metadata.credType, metadata.issueDate, expiry);
 
-  const attestConfirmTimeSec =
-    (attestEndTime - attestStartTime) / 1000;
+    const attestReceipt = await attestTx.wait();
+    const tokenId = Number(attestReceipt.logs[0].args.tokenId);
 
-  const attestLatencyBlocks =
-    attestEndBlock.number - attestStartBlock.number;
+    console.log("\nAttest credential:");
+    console.log("tokenId :", tokenId);
+    console.log("gasUsed :", attestReceipt.gasUsed.toString());
+    console.log("latency :", attestReceipt.blockNumber);
 
-  appendTx({
-    step: "attest",
-    tokenId,
-    gasUsed: attestReceipt.gasUsed.toString(),
-    blockNumber: attestReceipt.blockNumber,
-    confirmTimeSec: Number(attestConfirmTimeSec.toFixed(2)),
-    latencyBlocks: attestLatencyBlocks,
-    network: hre.network.name,
-    chainId: hre.network.config.chainId,
-    timestamp: new Date().toISOString(),
-  });
+    // 4) MINT SBT
+    const mintTx = await sbt
+        .connect(validator)
+        .mintSBT(tokenId, holder.address, metaHash, expiry);
 
-  console.log("\nAttest");
-  console.log("TokenID :", tokenId);
-  console.log("Gas     :", attestReceipt.gasUsed.toString());
-  console.log("Confirm :", attestConfirmTimeSec.toFixed(2), "sec");
-  console.log("Latency :", attestLatencyBlocks, "blocks");
+    const mintReceipt = await mintTx.wait();
 
-  // ================= 5. MINT =================
-  const mintStartTime = Date.now();
-  const mintStartBlock = await ethers.provider.getBlock("latest");
+    console.log("\nMint SBT:");
+    console.log("gasUsed :", mintReceipt.gasUsed.toString());
+    console.log("latency :", mintReceipt.blockNumber);
 
-  const mintTx = await sbt
-    .connect(validator)
-    .mintSBT(tokenId, holder.address, metaHash, expiry);
+    // 5) VERIFIER CHECK
+    const info = await registry.getCredentialInfo(tokenId);
 
-  const mintReceipt = await mintTx.wait();
-  const mintEndTime = Date.now();
-  const mintEndBlock = await ethers.provider.getBlock("latest");
-
-  const mintConfirmTimeSec =
-    (mintEndTime - mintStartTime) / 1000;
-
-  const mintLatencyBlocks =
-    mintEndBlock.number - mintStartBlock.number;
-
-  appendTx({
-    step: "mint",
-    tokenId,
-    gasUsed: mintReceipt.gasUsed.toString(),
-    blockNumber: mintReceipt.blockNumber,
-    confirmTimeSec: Number(mintConfirmTimeSec.toFixed(2)),
-    latencyBlocks: mintLatencyBlocks,
-    network: hre.network.name,
-    chainId: hre.network.config.chainId,
-    timestamp: new Date().toISOString(),
-  });
-
-  console.log("\nMint");
-  console.log("Gas     :", mintReceipt.gasUsed.toString());
-  console.log("Confirm :", mintConfirmTimeSec.toFixed(2), "sec");
-  console.log("Latency :", mintLatencyBlocks, "blocks");
-
-  // ================= 6. VERIFY =================
-  const verifyStartBlock = await ethers.provider.getBlock("latest");
-
-  const info = await registry.getCredentialInfo(tokenId);
-
-  const metaHashVC = ethers.solidityPackedKeccak256(
+    const metaHashVC = ethers.solidityPackedKeccak256(
     ["string", "string", "string", "uint256"],
     [
-      metadata.issuerID,
-      metadata.subjectID,
-      metadata.credType,
-      metadata.issueDate,
+        metadata.issuerID,
+        metadata.subjectID,
+        metadata.credType,
+        metadata.issueDate,
     ]
-  );
+    );
 
-  const credentialValid =
-    info[1].toLowerCase() === metaHashVC.toLowerCase() &&
-    Number(info[3]) === 1 &&
-    Number(info[2]) > verifyStartBlock.timestamp;
+    const verifyStartBlock = await ethers.provider.getBlock("latest");
 
-  const verifyEndBlock = await ethers.provider.getBlock("latest");
+    const credentialValid =
+    info[1].toLowerCase() === metaHashVC.toLowerCase() &&         
+    Number(info[3]) === 1 &&    
+    Number(info[2]) > verifyStartBlock.timestamp; 
 
-  const verifyLatencyBlocks =
-    verifyEndBlock.number - verifyStartBlock.number;
+    const verifyEndBlock = await ethers.provider.getBlock("latest");
 
-  appendTx({
-    step: "verify",
-    tokenId,
-    verified: credentialValid,
-    latencyBlocks: verifyLatencyBlocks,
-    network: hre.network.name,
-    chainId: hre.network.config.chainId,
-    timestamp: new Date().toISOString(),
-  });
+    console.log("\nVerify Credential:");
+    console.log("credentialValid :", credentialValid);
+    console.log("latency         :", verifyEndBlock.number - verifyStartBlock.number);
 
-  console.log("\nVerify");
-  console.log("Valid   :", credentialValid);
-  console.log("Latency :", verifyLatencyBlocks, "blocks");
+    
+    console.log("\nDEBUG CHECK");
+    console.log("metaHash OnChain:", info[1]);
+    console.log("metaHash VC     :", metaHashVC);
+    console.log("expiry OnChain  :", info[2].toString());
+    console.log("expiry Now      :", verifyStartBlock.timestamp);
+    console.log("status OnChain  :", info[3].toString());
 
-  // ================= SUMMARY =================
-  console.log("\n========== SUMMARY ==========");
-  console.log("Registry :", registryAddr);
-  console.log("SBT      :", sbtAddr);
-  console.log("TokenID  :", tokenId);
-  console.log("=============================\n");
-}
+    // VISUALIZATION
+    const txMetrics = [];
 
-// ================= RUN =================
-main().catch((err) => {
-  console.error(err);
-  process.exitCode = 1;
+    txMetrics.push({
+        step: "Attest",
+        gasUsed: attestReceipt.gasUsed.toString(),
+        blockNumber: attestReceipt.blockNumber,
+    });
+
+    txMetrics.push({
+    step: "mint",
+    gasUsed: Number(mintReceipt.gasUsed),
+    blockNumber: mintReceipt.blockNumber
 });
+
+txMetrics.push({
+    step: "verify",
+    latencyBlocks: verifyEndBlock.number - verifyStartBlock.number
+});
+
+console.log("Metrics ready for plotting:", txMetrics);
+
+
+    // SUMMARY OUTPUT
+    console.log("\n========== SUMMARY ==========");
+    console.log("Registry deployed :", registryAddr);
+    console.log("SBT deployed      :", sbtAddr);
+    console.log("TokenID           :", tokenId);
+    console.log("------------------------------");
+    console.log("GAS — Attest      :", attestReceipt.gasUsed.toString());
+    console.log("GAS — Mint SBT    :", mintReceipt.gasUsed.toString());
+    console.log("------------------------------");
+    console.log("Latency — Attest block :", attestReceipt.blockNumber);
+    console.log("Latency — Mint block   :", mintReceipt.blockNumber);
+    console.log("Latency — Verify        :", verifyEndBlock.number - verifyStartBlock.number);
+    console.log("=====================================\n");
+    }
+
+
+    main().catch((err) => {
+    console.error(err);
+    process.exitCode = 1;
+    });
